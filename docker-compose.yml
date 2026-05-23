@@ -1,0 +1,86 @@
+services:
+
+  # ── Reverse Proxy ─────────────────────────────────────────────
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    restart: unless-stopped
+    networks: [sa-net]
+
+  # ── Backend API ───────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: dev
+    volumes:
+      - ./backend/src:/app/src:ro
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgres://sponsoragent:sponsoragent@postgres:5432/sponsoragent
+      JWT_SECRET: local-development-jwt-secret-do-not-use-in-production
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_placeholder}
+      ADMIN_SECRET: ${ADMIN_SECRET:-local-dev-admin-secret}
+      EMAIL_PROXY_URL: ${EMAIL_PROXY_URL:-}
+      PUBLIC_BASE_URL: http://localhost
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks: [sa-net]
+
+  # ── Frontend ──────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+    volumes:
+      - ./frontend/src:/app/src:ro
+      - ./frontend/svelte.config.js:/app/svelte.config.js:ro
+    environment:
+      PUBLIC_API_URL: http://localhost/api
+    restart: unless-stopped
+    networks: [sa-net]
+
+  # ── PostgreSQL ────────────────────────────────────────────────
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: sponsoragent
+      POSTGRES_PASSWORD: sponsoragent
+      POSTGRES_DB: sponsoragent
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sponsoragent"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks: [sa-net]
+
+networks:
+  sa-net:
+    driver: bridge
+
+volumes:
+  pgdata:
+  caddy_data:
