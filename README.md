@@ -1,61 +1,60 @@
 # SponsorAgent
 
-SponsorAgent is a private full-stack outreach automation product for creator
-and sponsor workflows. The repo contains a TypeScript/Express backend, a
-SvelteKit frontend, analyzer services, database migrations, Dockerfiles,
-Compose config, Caddy config, and a Makefile.
+[![CI](https://github.com/Amarel-Taylor-Scott/sponsoragent/actions/workflows/ci.yml/badge.svg)](https://github.com/Amarel-Taylor-Scott/sponsoragent/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Node 22+](https://img.shields.io/badge/node-22+-green.svg)](https://nodejs.org/)
 
-## Current Shape
+SponsorAgent is a full-stack outreach-automation app for creator/sponsor
+workflows: paste a channel, get an AI sponsorship audit, and run outreach. It
+pairs a TypeScript/Express API with a SvelteKit frontend, analyzer services,
+database migrations, and Docker/Caddy deployment config.
+
+## Architecture
 
 ```text
 sponsoragent/
-├── backend/        Express API, migrations, v1 routes, analyzer services,
-│                   email-drip service, Stripe-aware app setup
-├── frontend/       SvelteKit app with dashboard, channel, outreach, audit,
-│                   pricing, login/signup, and platform-specific routes
-├── docker-compose.yml
+├── backend/        Express 5 API (TypeScript, ESM), Knex/Postgres migrations,
+│                   v1 routes, platform analyzer services, email-drip service,
+│                   JWT auth, Stripe-aware app setup
+├── frontend/       SvelteKit app — dashboard, channel audit, outreach,
+│                   pricing, login/signup, platform-specific routes
+├── docker-compose.yml   Postgres + Redis + backend + frontend + Caddy
 ├── Caddyfile
 ├── Makefile
-└── package.json
+└── package.json         npm workspaces (backend + frontend), Node 22+
 ```
 
-## Scripts
+Stack: **Express 5 · Knex · Postgres · Redis (ioredis) · JWT · Stripe · Zod ·
+Pino** (backend) and **SvelteKit · Svelte 4 · Vite · TypeScript** (frontend).
 
-The root package uses workspaces and requires Node 22 or newer.
+## Build & develop
 
 ```bash
-npm run build
-npm run lint
-npm test
+npm install            # installs both workspaces (Node 22+)
+npm run build          # builds backend (tsc) and frontend (vite) — CI-verified
+npm run lint           # typecheck both workspaces
+npm test               # workspace tests (vitest)
 ```
 
-Development is Docker-first:
+Running the full app (API + DB + outreach flows) is Docker-first and needs
+Postgres and Redis:
 
 ```bash
-npm run dev
-npm run dev:down
+cp .env.example .env   # set DATABASE_URL, REDIS_URL, JWT_SECRET, STRIPE_*, etc.
+npm run dev            # docker compose up -d --build
 npm run dev:logs
+npm run dev:down
 ```
 
-## Verification Snapshot
+> CI verifies install + build + typecheck. Runtime paths (migrations, Stripe
+> checkout/webhooks, email/outreach, platform analyzers) require a database and
+> external credentials and are not exercised in CI.
 
-Last static inventory pass: 2026-05-24.
+## Related repos
 
-- Package manifests were parsed.
-- Source shape was inspected: 58 files under `backend/src` and `frontend/src`.
-- Runtime commands were not run because this app uses Docker, databases,
-  checkout/webhook paths, outreach flows, and external platform integrations.
+- `leadova` — adjacent lead-generation product on a similar stack.
+- `social_media_automation` — adjacent posting/automation surface.
 
-## Operational Boundaries
+## License
 
-During broad ecosystem cleanup, prefer static checks and manifest parsing. Do
-not run Docker, migrations, seeders, checkout, webhook, email, outreach,
-platform analyzer, or deployment commands unless the session is explicitly
-scoped for application verification.
-
-## Related Repos
-
-- `leadova` is an adjacent lead-generation product using a similar stack.
-- `agency_email_scraper` is adjacent lead-source infrastructure.
-- `ai_influencer_auto_bot` and `social_media_automation` are adjacent
-  automation surfaces.
+MIT — see [LICENSE](LICENSE).

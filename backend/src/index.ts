@@ -20,7 +20,7 @@ async function bootstrap() {
     await db.raw('SELECT 1');
     logger.info('Database connected');
   } catch (err) {
-    logger.error('Database connection failed', { error: String(err) });
+    logger.error({ error: String(err) }, 'Database connection failed');
     process.exit(1);
   }
 
@@ -29,7 +29,7 @@ async function bootstrap() {
     await db.migrate.latest({ directory: './src/migrations' });
     logger.info('Database migrations complete');
   } catch (err) {
-    logger.error('Migration failed', { error: String(err) });
+    logger.error({ error: String(err) }, 'Migration failed');
     process.exit(1);
   }
 
@@ -46,7 +46,7 @@ async function bootstrap() {
 
   // Global error handler
   app.use((err: any, _req: any, res: any, _next: any) => {
-    logger.error('Unhandled error', { error: err.message, stack: err.stack });
+    logger.error({ error: err.message, stack: err.stack }, 'Unhandled error');
     const status = err.status ?? err.statusCode ?? 500;
     res.status(status).json({
       success: false,
@@ -74,6 +74,6 @@ async function bootstrap() {
 }
 
 bootstrap().catch((err) => {
-  logger.error('Fatal startup error', { error: String(err), stack: (err as Error).stack });
+  logger.error({ error: String(err), stack: (err as Error).stack }, 'Fatal startup error');
   process.exit(1);
 });

@@ -212,7 +212,7 @@
             <p>Brands in database</p>
           </div>
           <div class="proof-item card">
-            <div class="proof-num">< 5s</div>
+            <div class="proof-num">&lt; 5s</div>
             <p>Analysis time</p>
           </div>
         </div>

@@ -186,7 +186,7 @@ export async function analyzeTwitter(url: string): Promise<AnalysisResult> {
     recommendations.push(`Existing sponsor signals found: ${sponsoredPatterns.join('; ')}. This shows sponsor readiness.`);
   }
 
-  if (followerCount !== null && profile?.following !== null && profile.following > 0) {
+  if (followerCount !== null && profile && profile.following !== null && profile.following > 0) {
     const ratio = followerCount / profile.following;
     if (ratio > 10) {
       recommendations.push(`Strong follower-to-following ratio (${ratio.toFixed(0)}:1) signals authority -- brands value this metric.`);
