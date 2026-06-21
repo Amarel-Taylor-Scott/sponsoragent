@@ -1,0 +1,44 @@
+{
+	auto_https off
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+:80 {
+	# Security headers
+	header {
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		X-XSS-Protection "1; mode=block"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "geolocation=(), microphone=(), camera=()"
+	}
+
+	# Backend API
+	handle /api/* {
+		reverse_proxy {
+			to backend:3000
+			lb_policy round_robin
+			fail_duration 1s
+		}
+	}
+
+	handle /health {
+		reverse_proxy backend:3000
+	}
+
+	handle /ready {
+		reverse_proxy backend:3000
+	}
+
+	# Frontend (catch-all)
+	handle {
+		reverse_proxy frontend:5173 {
+			lb_policy round_robin
+			fail_duration 1s
+			header_up Host {host}
+			header_up X-Real-IP {remote_host}
+		}
+	}
+}

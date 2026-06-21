@@ -1,0 +1,36 @@
+# Secrets / credentials (never commit)
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+*service-account*.json
+
+# Node / JS / build output
+node_modules/
+dist/
+build/
+.svelte-kit/
+.next/
+.vite/
+*.tsbuildinfo
+
+# Python (backend tooling, if any)
+__pycache__/
+*.py[cod]
+.venv/
+
+# Logs / runtime
+*.log
+
+# Local tooling / generated indexes (not part of the project)
+.codegraph/
+.claude/
+.context.md
+.repo-manager-source.json
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
